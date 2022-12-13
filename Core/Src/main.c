@@ -25,15 +25,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+/*Include library for reading image */
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 //#include "stb_image_resize.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
+/*Include for edge detection*/
 #include "canny.h"
-
 /**-INCLUDE array type image -**/
 #include "road6.h"
 
@@ -41,7 +40,11 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+int flag = 0;
+int counter = 0;
+void startTimer(int flag, int* counter){
+	if (flag) (*counter)++;
+}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -75,6 +78,8 @@ ETH_TxPacketConfig TxConfig;
 
 ETH_HandleTypeDef heth;
 
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -89,6 +94,7 @@ static void MX_GPIO_Init(void);
 static void MX_ETH_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -129,14 +135,12 @@ int main(void)
   MX_ETH_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start_IT(&htim2);
 
 
-  	  //char *infilename = "road2.jpg";  /* Name of the input image */
       char *dirfilename = NULL; /* Name of the output gradient direction image */
-      //char outfilename[128];    /* Name of the output "edge" image */
-      //char composedfname[128];  /* Name of the output "direction" image */
-      //uint8_t *image = (uint8_t*) malloc(104800 * sizeof(uint8_t));     /* The input image */
       uint8_t *edge;      /* The output edge image */
       //int rows = 0, cols =0, channels = 0;           /* The dimensions of the image. */
       float   sigma =0.7,              /* Standard deviation of the gaussian kernel. */
@@ -144,93 +148,13 @@ int main(void)
               thigh =0.9;
 
 
-  /****************************************************************************
-     * Read in the image. This read function allocates memory for the image.
-     ****************************************************************************/
-      //if (CANNY_TEST_VERBOSE) printf("Reading the image %s.\n", infilename);
-
-
-      //image = stbi_load(infilename,&cols,&rows,&channels,1);
-
-      // add image here
-      //image = (uint8_t* )road2;
-      //memcpy(image, road2, sizeof(road2));
-
-      //uint8_t *img =  stbi__load_and_postprocess_8bit("road2.jpg",&x,&y,&ch,1);
-      //printf("x: %d, y: %d, ch: %d\n",cols,rows,channels);
-
-      //cols = 1200;rows = 717;
-      //cols = 976;rows = 549;
-
-      /*
-      if (read_pgm_image(infilename, &image, &rows, &cols) == 0) {
-          fprintf(stderr, "Error reading the input image, %s.\n", infilename);
-          exit(1);
-      }
-      */
-
-      /****************************************************************************
-      * Perform the edge detection. All of the work takes place here.
-      ****************************************************************************/
-      //if (CANNY_TEST_VERBOSE)
-       //   printf("Starting Canny edge detection.\n");
-
-      /*
-      if (dirfilename != NULL) {
-          sprintf(composedfname, "%s_s_%3.2f_l_%3.2f_h_%3.2f.fim", infilename, sigma,
-              tlow, thigh);
-          dirfilename = composedfname;
-      }
-      */
-      //struct timespec start;
-      //clock_gettime(CLOCK_MONOTONIC, &start);
-
-      ///------------
-              //rows = 549;cols =976;
-      //--- For read by file.h
+      //---Read by file.h and set flag for timer counter
+      flag = 1;
       canny((uint8_t*)road2, ROAD_HEIGHT, ROAD_WIDTH, sigma, tlow, thigh, &edge, dirfilename);
-
-      //-- For read by IMAGE
-      //canny(image, rows, cols, sigma, tlow, thigh, &edge, dirfilename);
+      flag = 0;
 
 
-      //printf("FINISH-------------------\n\n\n");
-      ///---------------
-      //printf("Total time: %.3f\n", get_runtime(start));
-
-
-
-
-      /****************************************************************************
-      * Write out the edge image to a file.
-      ****************************************************************************/
-      //sprintf(outfilename, "%s_s_%3.2d_l_%3.2d_h_%3.2d.y", infilename, sigma, tlow,thigh);
-
-      //if (CANNY_TEST_VERBOSE) printf("Writing the edge iname in the file %s.\n", outfilename);
-
-
-      /** For write by file.h**/
-      /*
-      if (write_pgm_image(outfilename, edge, ROAD_HEIGHT, ROAD_WIDTH, "", 255) == 0) {
-          fprintf(stderr, "Error writing the edge image, %s.\n", outfilename);
-          exit(1);
-      }
-		*/
-      //stbi_write_bmp("result.bmp",ROAD_WIDTH,ROAD_HEIGHT,1,edge);
-      //stbi_write_jpg("result.jpg",ROAD_WIDTH,ROAD_HEIGHT,1,edge,20);
-
-
-      /**-------- write by image
-      if (write_pgm_image(outfilename, edge, rows, cols, "", 255) == 0) {
-          fprintf(stderr, "Error writing the edge image, %s.\n", outfilename);
-          exit(1);
-      }
-      stbi_write_bmp("result.bmp",cols,rows,1,edge);
-      stbi_write_jpg("result.jpg",cols,rows,1,edge,20);
-      ***/
-      //uint32_t sizeimg = sizeof(image);
-      //uint32_t sizeimg2 = sizeof(road2);
-
+      //-- For export PGM file.
       /*
       HAL_UART_Transmit(&huart3, (uint8_t*)"P5 ", 3, 1000);
       char len[10];
@@ -246,8 +170,6 @@ int main(void)
       uint8_t* p_edge = edge;
       uint16_t maxsize = (uint16_t)(5000);
 
-      int sss= sizeof(edge);
-
       for (int i = 0 ; i < imglen; i += maxsize){
     	  if (remain > maxsize){
     		  HAL_UART_Transmit(&huart3, p_edge, maxsize, 100000);
@@ -259,9 +181,9 @@ int main(void)
     		  break;
     	  }
       }
-		*/
+	*/
 
-
+      //--Print image as binary to PNG
       int len = 0;
       uint8_t* result = stbi_write_png_to_mem(edge,ROAD_WIDTH,ROAD_WIDTH,ROAD_HEIGHT,1,&len);
       HAL_UART_Transmit(&huart3, result, len, 100000);
@@ -269,19 +191,9 @@ int main(void)
       HAL_UART_Transmit(&huart3, &str, 1, 100000);
 
 
-
-      uint8_t str2[100] = "";
-      HAL_UART_Transmit(&huart3, str2, sprintf(str2,"\n----H: %d, L: %d\n",ROAD_HEIGHT,ROAD_WIDTH), 100000);
-
-
-
-
-
-
-
-
-
-
+      //-- Print info as comment---//
+      char str2[100] = "";
+      HAL_UART_Transmit(&huart3, (uint8_t*)str2, sprintf(str2,"\n----H: %d, L: %d\n, Time: %d\n\r\n",ROAD_HEIGHT,ROAD_WIDTH,counter), 100000);
 
   /* USER CODE END 2 */
 
@@ -406,6 +318,51 @@ static void MX_ETH_Init(void)
   /* USER CODE BEGIN ETH_Init 2 */
 
   /* USER CODE END ETH_Init 2 */
+
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 7999;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 7;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
 
 }
 
@@ -556,7 +513,9 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	startTimer(flag, &counter);
+}
 /* USER CODE END 4 */
 
 /**

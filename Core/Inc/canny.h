@@ -24,10 +24,6 @@
 
 
 
-int write_pgm_image(char *outfilename, unsigned char *image, int rows,
-    int cols, char *comment, int maxval);
-
-
 void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
     short int **smoothedim);
 void make_gaussian_kernel(float sigma, float **kernel, int *windowsize);
@@ -37,179 +33,11 @@ void magnitude_x_y(short int *delta_x, short int *delta_y, int rows, int cols,
     short int **magnitude);
 void apply_hysteresis(short int *mag, unsigned char *nms, int rows, int cols,
     float tlow, float thigh, unsigned char *edge);
-void radian_direction(short int *delta_x, short int *delta_y, int rows,
-    int cols, float **dir_radians, int xdirtag, int ydirtag);
-double angle_radians(double x, double y);
-/*
-double get_runtime(struct timespec start) {
-  struct timespec finish;
-  double seconds;
-
-  clock_gettime(CLOCK_MONOTONIC, &finish);
-
-  seconds = (finish.tv_sec - start.tv_sec);
-  seconds += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-
-  return seconds;
-}
-*/
-/******************************************************************************
-* Function: read_pgm_image
-* Purpose: This function reads in an image in PGM format. The image can be
-* read in from either a file or from standard input. The image is only read
-* from standard input when infilename = NULL. Because the PGM format includes
-* the number of columns and the number of rows in the image, these are read
-* from the file. Memory to store the image is allocated in this function.
-* All comments in the header are discarded in the process of reading the
-* image. Upon failure, this function returns 0, upon sucess it returns 1.
-******************************************************************************/
-
-/*
-
-int read_pgm_image(char *infilename, unsigned char **image, int *rows,
-    int *cols)
-{
-    FILE *fp;
-    char buf[71];
-
-    ***************************************************************************
-    * Open the input image file for reading if a filename was given. If no
-    * filename was provided, set fp to read from standard input.
-    ***************************************************************************
-    if (infilename == NULL){
-            fp = stdin;
-            printf("ok");
-    }
-    else{
-        if ((fp = fopen(infilename, "r")) == NULL){
-            fprintf(stderr, "Error reading the file %s in read_pgm_image().\n",
-                infilename);
-            return(0);
-        }
-    }
-
-    ***************************************************************************
-    * Verify that the image is in PGM format, read in the number of columns
-    * and rows in the image and scan past all of the header information.
-    ***************************************************************************
-    fgets(buf, 70, fp);
-
-    printf(buf);printf("\n");
-
-    if (strncmp(buf, "P5", 2) != 0){
-        fprintf(stderr, "The file %s is not in PGM format in ", infilename);
-        fprintf(stderr, "read_pgm_image().\n");
-        if (fp != stdin) fclose(fp);
-        return(0);
-    }
-    do{ fgets(buf, 70, fp); } while (buf[0] == '#');  * skip all comment lines *
-
-        printf(buf);printf("\n");
+//void radian_direction(short int *delta_x, short int *delta_y, int rows,
+    //int cols, float **dir_radians, int xdirtag, int ydirtag);
+//double angle_radians(double x, double y);
 
 
-    sscanf(buf, "%d %d", cols, rows);
-    do{ fgets(buf, 70, fp); } while (buf[0] == '#');  * skip all comment lines *
-
-    printf(buf);printf("\n");
-
-
-    ***************************************************************************
-    * Allocate memory to store the image then read the image from the file.
-    ***************************************************************************
-
-
-
-    if (((*image) = (unsigned char *)malloc((*rows)*(*cols))) == NULL){
-        fprintf(stderr, "Memory allocation failure in read_pgm_image().\n");
-        if (fp != stdin) fclose(fp);
-        return(0);
-    }
-
-    printf("%d --- %d \n",*rows, fread((*image), (*cols), (*rows), fp)  );
-
-        fread((*image), (*cols), (*rows), fp)  ;
-
-
-        printf(*image);
-
-    if ((*rows) != fread((*image), (*cols), (*rows), fp)){
-        fprintf(stderr, "Error reading the image data in read_pgm_image().\n");
-        if (fp != stdin) fclose(fp);
-        free((*image));
-        return(0);
-    }
-
-    if (fp != stdin) fclose(fp);
-    return(1);
-}
-
-*/
-
-/******************************************************************************
-* Function: read_pgm_image
-* Purpose: This function reads in an image in Y raw format. The image can be
-* read in from either a file or from standard input. The image is only read
-* from standard input when infilename = NULL. Because the PGM format includes
-* the number of columns and the number of rows in the image, these are read
-* from the file. Memory to store the image is allocated in this function.
-* All comments in the header are discarded in the process of reading the
-* image. Upon failure, this function returns 0, upon sucess it returns 1.
-******************************************************************************/
-
-
-/******************************************************************************
-* Function: write_pgm_image
-* Purpose: This function writes an image in PGM format. The file is either
-* written to the file specified by outfilename or to standard output if
-* outfilename = NULL. A comment can be written to the header if coment != NULL.
-******************************************************************************/
-int write_pgm_image(char *outfilename, unsigned char *image, int rows,
-    int cols, char *comment, int maxval)
-{
-    FILE *fp;
-
-    /***************************************************************************
-    * Open the output image file for writing if a filename was given. If no
-    * filename was provided, set fp to write to standard output.
-    ***************************************************************************/
-    if (outfilename == NULL) fp = stdout;
-    else{
-        if ((fp = fopen(outfilename, "w")) == NULL){
-            fprintf(stderr, "Error writing the file %s in write_pgm_image().\n",
-                outfilename);
-            return(0);
-        }
-    }
-
-    /***************************************************************************
-    * Write the header information to the PGM file.
-    ***************************************************************************/
-    fprintf(fp, "P5\n%d %d\n", cols, rows);
-    if (comment != NULL)
-    if (strlen(comment) <= 70) fprintf(fp, "# %s\n", comment);
-    fprintf(fp, "%d\n", maxval);
-
-    /***************************************************************************
-    * Write the image data to the file.
-    ***************************************************************************/
-
-
-    if (rows != fwrite(image, cols, rows, fp)){
-        fprintf(stderr, "Error writing the image data in write_pgm_image().\n");
-        if (fp != stdout) fclose(fp);
-        return(0);
-    }
-
-    if (fp != stdout) fclose(fp);
-    return(1);
-}
-
-/******************************************************************************
-* Function: write_pgm_image
-* Purpose: This function writes an image in PGM format. The file is either
-* written to the file specified by outfilename or to standard output if
-* outfilename = NULL. A comment can be written to the header if coment != NULL.
-******************************************************************************/
 
 /*******************************************************************************
 * PROCEDURE: follow_edges
@@ -326,14 +154,8 @@ void apply_hysteresis(short int *mag, unsigned char *nms, int rows, int cols,
     highthreshold = r;
     lowthreshold = (int)(highthreshold * tlow + 0.5);
 
-    if (CANNY_LIB_VERBOSE){
-    	printf("eye");
-    	//printf("The input low and high fractions of %d.%d and %d.%d computed to\n",tlow, thigh);
-        printf("magnitude of the gradient threshold values of: %d %d\n",lowthreshold, highthreshold);
-    }
-
     /****************************************************************************
-    * This loop looks for pixels above the highthreshold to locate edges and
+    * This loop lor pixels above the highthreshold to locate edges and
     * then calls follow_edges to continue the edge.
     ****************************************************************************/
     for (r = 0, pos = 0; r<rows; r++){
@@ -587,14 +409,12 @@ void canny(unsigned char *image, int rows, int cols, float sigma,
     * Perform gaussian smoothing on the image using the input standard
     * deviation.
     ****************************************************************************/
-    if (CANNY_LIB_VERBOSE) printf("Smoothing the image using a gaussian kernel.\n");
 
     gaussian_smooth(image, rows, cols, sigma, &smoothedim);
 
     /****************************************************************************
     * Compute the first derivative in the x and y directions.
     ****************************************************************************/
-    if (CANNY_LIB_VERBOSE) printf("Computing the X and Y first derivatives.\n");
     derrivative_x_y(smoothedim, rows, cols, &delta_x, &delta_y);
 
     free(smoothedim);
@@ -602,15 +422,11 @@ void canny(unsigned char *image, int rows, int cols, float sigma,
     /****************************************************************************
     * Compute the magnitude of the gradient.
     ****************************************************************************/
-    if (CANNY_LIB_VERBOSE) printf("Computing the magnitude of the gradient.\n");
-
     magnitude_x_y(delta_x, delta_y, rows, cols, &magnitude);
 
     /****************************************************************************
     * Perform non-maximal suppression.
     ****************************************************************************/
-    if (CANNY_LIB_VERBOSE) printf("Doing the non-maximal suppression.\n");
-
     if ((nms = (unsigned char *)calloc(rows*cols, sizeof(unsigned char))) == NULL){
         fprintf(stderr, "Error allocating the nms image.\n");
         exit(1);
@@ -656,6 +472,8 @@ void canny(unsigned char *image, int rows, int cols, float sigma,
 * The resulting angle is in radians measured counterclockwise from the
 * xdirection. The angle points "up the gradient".
 *******************************************************************************/
+
+/*
 void radian_direction(short int *delta_x, short int *delta_y, int rows,
     int cols, float **dir_radians, int xdirtag, int ydirtag)
 {
@@ -663,9 +481,7 @@ void radian_direction(short int *delta_x, short int *delta_y, int rows,
     float *dirim = NULL;
     double dx, dy;
 
-    /****************************************************************************
-    * Allocate an image to store the direction of the gradient.
-    ****************************************************************************/
+
     if ((dirim = (float *)calloc(rows*cols, sizeof(float))) == NULL){
         fprintf(stderr, "Error allocating the gradient direction image.\n");
         exit(1);
@@ -685,12 +501,15 @@ void radian_direction(short int *delta_x, short int *delta_y, int rows,
     }
 }
 
+*/
+
 /*******************************************************************************
 * FUNCTION: angle_radians
 * PURPOSE: This procedure computes the angle of a vector with components x and
 * y. It returns this angle in radians with the answer being in the range
 * 0 <= angle <2*PI.
 *******************************************************************************/
+/*
 double angle_radians(double x, double y)
 {
     double xu, yu, ang;
@@ -712,6 +531,7 @@ double angle_radians(double x, double y)
     }
 }
 
+*/
 /*******************************************************************************
 * PROCEDURE: magnitude_x_y
 * PURPOSE: Compute the magnitude of the gradient. This is the square root of
@@ -839,7 +659,6 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
     ****************************************************************************/
 
     float *ktmp = kernel;
-    if (CANNY_LIB_VERBOSE) printf("   Computing the gaussian smoothing kernel.\n");
 
     make_gaussian_kernel(sigma, &ktmp, &windowsize);
     kernel = ktmp;
@@ -861,10 +680,6 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
     /****************************************************************************
     * Blur in the x - direction.
     ****************************************************************************/
-    if (CANNY_LIB_VERBOSE) printf("   Bluring the image in the X-direction.\n");
-
-    //struct timespec start;
-    //clock_gettime(CLOCK_MONOTONIC, &start);
 
     float* dot_arr = calloc(cols, sizeof(float));
     float* sum_arr = calloc(cols, sizeof(float));
@@ -888,7 +703,7 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
     /****************************************************************************
     * Blur in the y - direction.
     ****************************************************************************/
-    if (CANNY_LIB_VERBOSE) printf("   Bluring the image in the Y-direction.\n");
+
     for (r = 0; r < rows; r++) {
         memset(dot_arr, 0, cols * sizeof(float));
         memset(sum_arr, 0, cols * sizeof(float));
@@ -929,7 +744,7 @@ void make_gaussian_kernel(float sigma, float **kernel, int *windowsize)
     *windowsize = 1 + 2 * ceil(2.5 * sigma);
     center = (*windowsize) / 2;
 
-    if (CANNY_LIB_VERBOSE) printf("      The kernel has %d elements.\n", *windowsize);
+
     if ((*kernel = (float *)calloc((*windowsize), sizeof(float))) == NULL){
         fprintf(stderr, "Error callocing the gaussian kernel array.\n");
         exit(1);
@@ -943,13 +758,6 @@ void make_gaussian_kernel(float sigma, float **kernel, int *windowsize)
     }
 
     for (i = 0; i<(*windowsize); i++) (*kernel)[i] /= sum;
-
-    if (CANNY_LIB_VERBOSE){
-        printf("The filter coefficients are:\n");
-        for (i = 0; i<(*windowsize); i++)
-        	printf("eye");
-            //printf("kernel[%d] = %d\n", i, (*kernel)[i]);
-    }
 
 }
 
