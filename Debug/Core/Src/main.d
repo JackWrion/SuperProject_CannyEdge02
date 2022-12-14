@@ -37,7 +37,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_usb.h \
  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd_ex.h \
  ../Core/Inc/stb_image.h ../Core/Inc/stb_image_write.h \
- ../Core/Inc/canny.h ../Core/Inc/road6.h
+ ../Core/Inc/canny.h ../Core/Inc/road4.h
 ../Core/Inc/main.h:
 ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 ../Core/Inc/stm32h7xx_hal_conf.h:
@@ -79,4 +79,4 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/stb_image.h:
 ../Core/Inc/stb_image_write.h:
 ../Core/Inc/canny.h:
-../Core/Inc/road6.h:
+../Core/Inc/road4.h:

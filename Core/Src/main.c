@@ -34,7 +34,7 @@
 /*Include for edge detection*/
 #include "canny.h"
 /**-INCLUDE array type image -**/
-#include "road6.h"
+#include "road4.h"
 
 /* USER CODE END Includes */
 
@@ -42,8 +42,8 @@
 /* USER CODE BEGIN PTD */
 int flag = 0;
 int counter = 0;
-void startTimer(int flag, int* counter){
-	if (flag) (*counter)++;
+void startTimer(int flag){
+	if (flag) counter++;
 }
 /* USER CODE END PTD */
 
@@ -514,7 +514,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	startTimer(flag, &counter);
+	startTimer(flag);
 }
 /* USER CODE END 4 */
 
